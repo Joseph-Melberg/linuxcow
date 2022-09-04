@@ -3,14 +3,15 @@
   hosts: localhost
   vars:
     home_path: /home/jbmelberg
+    git_path: /home/jbmelberg/Git
   tasks:
    - name: Install packages
-     command: pacman -Syu --noconfirm neovim sshfs tmux github-cli
+     command: pacman -Syu --noconfirm neovim sshfs tmux github-cli discord
      become: yes
    - name: Setup Git Defaults
      command: git config --global init.defaultBranch main
-   - name: Clean up SSH key
-     command: rm ~/.ssh/id_rsa
+   - name: Setup Git info
+     command: git config --global user.name Joseph-Melberg
    - name: Setup SSH key
      command: ssh-keygen -t rsa -f ~/.ssh/id_rsa -q -N ""
      args:
@@ -23,10 +24,24 @@
    - name: Get Dot Files
      command: git clone https://github.com/Joseph-Melberg/dotfiles 
      args:
-       chdir: "{{ home_path }}/Git"
+       chdir: "{{ git_path }}"
        creates: ~/Git/dotfiles
    - name: Set up touchpad
-     command: cp dotfiles/etc/X11/xorg.conf.d/20-intel.conf /etc/X11/xorg.conf.d/
+     command: cp dotfiles/usr/40-libinput.conf /etc/X11/xorg.conf.d/
      args:
-       chdir: "{{ home_path }}/Git/"
+       chdir: "{{ git_path }}"
      become: yes
+   - name: Download VSCode Insiders
+     command: git clone https://aur.archlinux.org/visual-studio-code-insiders-bin.git
+     args:
+       chdir: "{{ git_path }}"
+       creates: "{{ git_path }}/visual-studio-code-insiders-bin"
+   - name: Install VSCode Insiders
+     command: makepkg --force --noconfirm -si
+     args:
+       chdir: "{{ git_path}}/visual-studio-code-insiders-bin"
+   - name: Copy over hosts
+     command: cp ssh/config "{{ home_path }}/.ssh"
+     args:
+       chdir: "{{ git_path}}/dotfiles"
+       
