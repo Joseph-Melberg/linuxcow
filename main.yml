@@ -1,0 +1,32 @@
+---
+- name: Set up
+  hosts: localhost
+  vars:
+    home_path: /home/jbmelberg
+  tasks:
+   - name: Install packages
+     command: pacman -Syu --noconfirm neovim sshfs tmux github-cli
+     become: yes
+   - name: Setup Git Defaults
+     command: git config --global init.defaultBranch main
+   - name: Clean up SSH key
+     command: rm ~/.ssh/id_rsa
+   - name: Setup SSH key
+     command: ssh-keygen -t rsa -f ~/.ssh/id_rsa -q -N ""
+     args:
+       creates: ~/.ssh/id_rsa
+   - name: Prepare Git
+     command: mkdir Git
+     args:
+       chdir: "{{ home_path }}"
+       creates: ~/Git
+   - name: Get Dot Files
+     command: git clone https://github.com/Joseph-Melberg/dotfiles 
+     args:
+       chdir: "{{ home_path }}/Git"
+       creates: ~/Git/dotfiles
+   - name: Set up touchpad
+     command: cp dotfiles/etc/X11/xorg.conf.d/20-intel.conf /etc/X11/xorg.conf.d/
+     args:
+       chdir: "{{ home_path }}/Git/"
+     become: yes

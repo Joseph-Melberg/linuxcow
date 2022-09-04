@@ -1,0 +1,11 @@
+---
+# Setup SSH
+- name: Generate key
+  vars_prompt:
+
+   - name: ghtoken
+     prompt: Gib GHTOKEN
+     private: yes
+  
+  command: ssh-keygen -t rsa -f ~/.ssh/id_rsa -q -N ""
+
